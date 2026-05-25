@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('locker_status_logs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('company_id')->constrained('companies')->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained('companies')->noActionOnDelete();
             $table->foreignId('locker_id')->constrained('lockers')->cascadeOnDelete();
             $table->foreignId('changed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('old_status', 20)->nullable();

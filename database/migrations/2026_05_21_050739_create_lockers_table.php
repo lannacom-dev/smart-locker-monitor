@@ -28,10 +28,11 @@ return new class extends Migration
             $table->string('ip_address')->nullable();
 
             $table->enum('status', [
-                'online',
+                'available',
+                'in_use',
+                'fault',
                 'offline',
-                'maintenance',
-                'error',
+                'disabled',
             ])->default('offline');
 
             $table->timestamp('last_seen_at')->nullable();
