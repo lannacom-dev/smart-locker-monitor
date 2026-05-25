@@ -46,6 +46,8 @@ class RolePermissionSeeder extends Seeder
 
             'view reports',
             'export reports',
+
+            'update locker status',
         ];
 
         foreach ($permissions as $permission) {
@@ -96,6 +98,8 @@ class RolePermissionSeeder extends Seeder
 
             'view reports',
             'export reports',
+
+            'update locker status',
         ]);
 
         $technician->syncPermissions([

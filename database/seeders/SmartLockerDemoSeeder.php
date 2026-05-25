@@ -100,7 +100,7 @@ class SmartLockerDemoSeeder extends Seeder
             serialNumber: 'LANNACOM-NEXA-001',
             ipAddress: '10.10.70.213',
             boxCount: 12,
-            online: true
+            status: 'available'
         );
 
         $this->createLockerSet(
@@ -110,7 +110,7 @@ class SmartLockerDemoSeeder extends Seeder
             serialNumber: 'LANNACOM-NEXA-002',
             ipAddress: '10.10.70.214',
             boxCount: 8,
-            online: false
+            status: 'disabled'
         );
 
         /*
@@ -163,7 +163,7 @@ class SmartLockerDemoSeeder extends Seeder
             serialNumber: 'NEXASTONE-NEXA-001',
             ipAddress: '10.20.30.101',
             boxCount: 16,
-            online: true
+            status: 'in_use'
         );
 
         /*
@@ -216,7 +216,7 @@ class SmartLockerDemoSeeder extends Seeder
             serialNumber: 'DYNATIX-NEXA-001',
             ipAddress: '10.30.40.101',
             boxCount: 10,
-            online: false
+            status: 'fault'
         );
     }
 
@@ -227,8 +227,9 @@ class SmartLockerDemoSeeder extends Seeder
         string $serialNumber,
         string $ipAddress,
         int $boxCount,
-        bool $online
+        string $status = 'available'
     ): void {
+        $online = in_array($status, ['available', 'in_use']);
         $locker = Locker::updateOrCreate(
             ['serial_number' => $serialNumber],
             [
@@ -237,7 +238,7 @@ class SmartLockerDemoSeeder extends Seeder
                 'name' => $lockerName,
                 'api_token' => hash('sha256', $serialNumber . '-token'),
                 'ip_address' => $ipAddress,
-                'status' => $online ? 'online' : 'offline',
+                'status' => $status,
                 'last_seen_at' => $online ? now()->subSeconds(rand(10, 90)) : now()->subMinutes(rand(5, 60)),
                 'firmware_version' => '1.0.' . rand(1, 9),
                 'description' => 'Demo smart locker for ' . $company->name,

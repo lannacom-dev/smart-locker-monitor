@@ -8,10 +8,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Locker extends Model
 {
-    public const STATUS_ONLINE = 'online';
-    public const STATUS_OFFLINE = 'offline';
-    public const STATUS_MAINTENANCE = 'maintenance';
-    public const STATUS_ERROR = 'error';
+    public const STATUS_AVAILABLE = 'available';
+    public const STATUS_IN_USE    = 'in_use';
+    public const STATUS_FAULT     = 'fault';
+    public const STATUS_OFFLINE   = 'offline';
+    public const STATUS_DISABLED  = 'disabled';
 
     protected $fillable = [
         'company_id',
@@ -56,6 +57,11 @@ class Locker extends Model
         return $this->hasMany(LockerEvent::class);
     }
 
+    public function statusLogs(): HasMany
+    {
+        return $this->hasMany(LockerStatusLog::class);
+    }
+
     public function isOnline(): bool
     {
         return $this->last_seen_at !== null
@@ -64,22 +70,59 @@ class Locker extends Model
 
     public function isOffline(): bool
     {
-        return !$this->isOnline();
+        return $this->status === self::STATUS_OFFLINE;
     }
 
-    public function markOnline(): bool
+    public function markAvailable(): bool
     {
-        return $this->update([
-            'status' => self::STATUS_ONLINE,
-            'last_seen_at' => now(),
-        ]);
+        return $this->update(['status' => self::STATUS_AVAILABLE, 'last_seen_at' => now()]);
+    }
+
+    public function markInUse(): bool
+    {
+        return $this->update(['status' => self::STATUS_IN_USE]);
+    }
+
+    public function markFault(): bool
+    {
+        return $this->update(['status' => self::STATUS_FAULT]);
     }
 
     public function markOffline(): bool
     {
-        return $this->update([
-            'status' => self::STATUS_OFFLINE,
-        ]);
+        return $this->update(['status' => self::STATUS_OFFLINE]);
+    }
+
+    public function markDisabled(): bool
+    {
+        return $this->update(['status' => self::STATUS_DISABLED]);
+    }
+
+    public static function statusOptions(): array
+    {
+        return [
+            self::STATUS_AVAILABLE => 'Available',
+            self::STATUS_IN_USE    => 'In Use',
+            self::STATUS_FAULT     => 'Fault',
+            self::STATUS_OFFLINE   => 'Offline',
+            self::STATUS_DISABLED  => 'Disabled',
+        ];
+    }
+
+    public static function statusColors(): array
+    {
+        return [
+            self::STATUS_AVAILABLE => 'success',
+            self::STATUS_IN_USE    => 'info',
+            self::STATUS_FAULT     => 'danger',
+            self::STATUS_OFFLINE   => 'gray',
+            self::STATUS_DISABLED  => 'warning',
+        ];
+    }
+
+    public function scopeWithStatus($query, string $status)
+    {
+        return $query->where('status', $status);
     }
 
     public function scopeOnline($query)
