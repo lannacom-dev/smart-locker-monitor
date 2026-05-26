@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -9,7 +11,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
@@ -40,6 +42,8 @@ class User extends Authenticatable
         return $this->belongsTo(Company::class);
     }
 
+    // ── Role helpers ──────────────────────────────────────────────
+
     public function isSuperAdmin(): bool
     {
         return $this->hasRole('super_admin');
@@ -60,14 +64,57 @@ class User extends Authenticatable
         return $this->hasRole('technician');
     }
 
+    // ── Filament ──────────────────────────────────────────────────
+
+    public function canAccessPanel(Panel $panel): bool
+    {
+        return $this->is_active;
+    }
+
+    // ── Company access control ────────────────────────────────────
+
+    /**
+     * Return all company IDs this user may access.
+     *
+     * Super admin  → every company in the system
+     * Tenant user  → own company + all descendant companies (reseller tree)
+     * No company   → empty (should not normally happen for non-super admins)
+     *
+     * Tip: call `$user->load('company.childCompanies')` before using this
+     * in a loop to prevent N+1 queries.
+     */
+    public function accessibleCompanyIds(): array
+    {
+        if ($this->isSuperAdmin()) {
+            return Company::pluck('id')->toArray();
+        }
+
+        if ($this->company_id === null) {
+            return [];
+        }
+
+        // Lazy-load so single calls are still efficient
+        if (! $this->relationLoaded('company')) {
+            $this->load('company');
+        }
+
+        return $this->company->descendantIds();
+    }
+
+    /**
+     * Check whether this user may access data belonging to $companyId.
+     * Respects the full reseller hierarchy.
+     */
     public function canAccessCompany(int $companyId): bool
     {
         if ($this->isSuperAdmin()) {
             return true;
         }
 
-        return (int) $this->company_id === $companyId;
+        return in_array($companyId, $this->accessibleCompanyIds(), true);
     }
+
+    // ── Scopes ────────────────────────────────────────────────────
 
     public function scopeActive($query)
     {

@@ -14,14 +14,23 @@ class Locker extends Model
     public const STATUS_OFFLINE   = 'offline';
     public const STATUS_DISABLED  = 'disabled';
 
+    public const CONN_ONLINE  = 'online';
+    public const CONN_WARNING = 'warning';
+    public const CONN_OFFLINE = 'offline';
+
     protected $fillable = [
         'company_id',
         'location_id',
+        'external_locker_id',
+        'external_unit_id',
         'name',
         'serial_number',
         'api_token',
         'ip_address',
         'status',
+        'connection_status',
+        'heartbeat_interval',
+        'offline_after',
         'last_seen_at',
         'firmware_version',
         'description',
@@ -29,8 +38,10 @@ class Locker extends Model
     ];
 
     protected $casts = [
-        'last_seen_at' => 'datetime',
-        'is_active' => 'boolean',
+        'last_seen_at'       => 'datetime',
+        'is_active'          => 'boolean',
+        'heartbeat_interval' => 'integer',
+        'offline_after'      => 'integer',
     ];
 
     protected $hidden = [
@@ -62,15 +73,51 @@ class Locker extends Model
         return $this->hasMany(LockerStatusLog::class);
     }
 
+    public function connections(): HasMany
+    {
+        return $this->hasMany(LockerConnection::class);
+    }
+
+    public function floorPosition(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(LockerLocation::class);
+    }
+
+    /** Compute real-time connection status from last_seen_at */
+    public function computeConnectionStatus(): string
+    {
+        if ($this->last_seen_at === null) {
+            return self::CONN_OFFLINE;
+        }
+
+        $secondsAgo = (int) now()->diffInSeconds($this->last_seen_at);
+        $warningAt  = $this->heartbeat_interval * 2;          // 2× interval = warning
+        $offlineAt  = $this->offline_after;                    // e.g. 300 s
+
+        if ($secondsAgo <= $warningAt) {
+            return self::CONN_ONLINE;
+        }
+
+        if ($secondsAgo <= $offlineAt) {
+            return self::CONN_WARNING;
+        }
+
+        return self::CONN_OFFLINE;
+    }
+
     public function isOnline(): bool
     {
-        return $this->last_seen_at !== null
-            && $this->last_seen_at->gt(now()->subMinutes(2));
+        return $this->connection_status === self::CONN_ONLINE;
+    }
+
+    public function isWarning(): bool
+    {
+        return $this->connection_status === self::CONN_WARNING;
     }
 
     public function isOffline(): bool
     {
-        return $this->status === self::STATUS_OFFLINE;
+        return $this->connection_status === self::CONN_OFFLINE;
     }
 
     public function markAvailable(): bool

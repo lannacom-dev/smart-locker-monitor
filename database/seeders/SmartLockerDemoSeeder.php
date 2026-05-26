@@ -45,6 +45,7 @@ class SmartLockerDemoSeeder extends Seeder
         $lannacom = Company::updateOrCreate(
             ['code' => 'LANNACOM'],
             [
+                'parent_company_id' => null,   // Root reseller
                 'name' => 'Lannacom Co., Ltd.',
                 'contact_name' => 'Lannacom Contact',
                 'contact_phone' => '+66 53 441480',
@@ -122,6 +123,7 @@ class SmartLockerDemoSeeder extends Seeder
         $nexastone = Company::updateOrCreate(
             ['code' => 'NEXASTONE'],
             [
+                'parent_company_id' => $lannacom->id,  // Reseller of Lannacom
                 'name' => 'Nexastone Company Limited',
                 'contact_name' => 'Nexastone Contact',
                 'contact_phone' => '021238822',
@@ -175,6 +177,7 @@ class SmartLockerDemoSeeder extends Seeder
         $dynatix = Company::updateOrCreate(
             ['code' => 'DYNATIX'],
             [
+                'parent_company_id' => $nexastone->id,  // Reseller of Nexastone
                 'name' => 'บริษัท ไดนาทิกซ์ จำกัด',
                 'contact_name' => 'Dynatix Contact',
                 'contact_phone' => null,

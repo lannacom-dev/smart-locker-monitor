@@ -69,10 +69,16 @@ class LockerStatusService
             ->withCount('boxes')
             ->orderBy('name');
 
-        if (!$user->isSuperAdmin()) {
-            $query->forCompany($user->company_id);
-        } elseif ($companyId !== null) {
-            $query->forCompany($companyId);
+        if ($user->isSuperAdmin()) {
+            if ($companyId !== null) {
+                $query->forCompany($companyId);
+            }
+        } else {
+            // Scope to the full reseller subtree (own company + all descendants)
+            $ids = $user->accessibleCompanyIds();
+            count($ids) === 1
+                ? $query->forCompany($ids[0])
+                : $query->whereIn('company_id', $ids);
         }
 
         if ($locationId !== null) {

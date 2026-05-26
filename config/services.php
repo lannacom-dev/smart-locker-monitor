@@ -35,4 +35,20 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Lannacom SmartLocker API
+    |--------------------------------------------------------------------------
+    |
+    | External API used to control physical locker hardware.
+    | Auth: OAuth2 ClientCredentials — POST /auth/token
+    |
+    */
+    'smartlocker' => [
+        'base_url'      => env('SMARTLOCKER_API_URL', 'https://message-service.lanna.co.th:5183'),
+        'client_id'     => env('SMARTLOCKER_CLIENT_ID'),
+        'client_secret' => env('SMARTLOCKER_CLIENT_SECRET'),
+        'timeout'       => (int) env('SMARTLOCKER_TIMEOUT', 10),
+    ],
+
 ];
