@@ -48,6 +48,10 @@ class RolePermissionSeeder extends Seeder
             'export reports',
 
             'update locker status',
+
+            // System Health Dashboard
+            'view system health',
+            'acknowledge alerts',
         ];
 
         foreach ($permissions as $permission) {
@@ -100,6 +104,10 @@ class RolePermissionSeeder extends Seeder
             'export reports',
 
             'update locker status',
+
+            // Health Dashboard
+            'view system health',
+            'acknowledge alerts',
         ]);
 
         $technician->syncPermissions([
@@ -115,6 +123,9 @@ class RolePermissionSeeder extends Seeder
 
             'unlock locker',
             'restart locker',
+
+            // Technician can view health but not acknowledge
+            'view system health',
         ]);
 
         $viewer->syncPermissions([

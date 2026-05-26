@@ -25,6 +25,13 @@ Schedule::command('lockers:check-offline')
     ->runInBackground()
     ->appendOutputTo(storage_path('logs/offline-sweep.log'));
 
+// System health checks — device, connection, API health + alert management
+Schedule::command('health:check')
+    ->everyFiveMinutes()
+    ->withoutOverlapping()
+    ->runInBackground()
+    ->appendOutputTo(storage_path('logs/health-check.log'));
+
 // Sync locker status from the Lannacom SmartLocker API
 // Only runs when SMARTLOCKER_CLIENT_ID is configured
 Schedule::command('smartlocker:sync')
