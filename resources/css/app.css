@@ -9,3 +9,15 @@
     --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
         'Segoe UI Symbol', 'Noto Color Emoji';
 }
+
+/* ── Sneat-style base overrides ── */
+@layer base {
+    body { color: #5d596c; }
+    *:focus-visible { outline: 2px solid #7367f0; outline-offset: 2px; }
+}
+
+/* ── Reusable card shadow ── */
+@layer utilities {
+    .sneat-shadow { box-shadow: 0 2px 6px 0 rgba(67, 89, 113, .12); }
+    .sneat-shadow-md { box-shadow: 0 4px 16px 0 rgba(67, 89, 113, .18); }
+}

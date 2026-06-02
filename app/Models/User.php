@@ -2,8 +2,6 @@
 
 namespace App\Models;
 
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -11,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
 
@@ -64,11 +62,77 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasRole('technician');
     }
 
-    // ── Filament ──────────────────────────────────────────────────
-
-    public function canAccessPanel(Panel $panel): bool
+    public function isOperator(): bool
     {
-        return $this->is_active;
+        return $this->hasRole('operator');
+    }
+
+    public function isSupport(): bool
+    {
+        return $this->hasRole('support');
+    }
+
+    /**
+     * Numeric hierarchy level — used for role assignment guards.
+     * super_admin(100) > tenant_admin(50) > operator/technician(30) > support/viewer(10)
+     */
+    public function getHighestRoleLevel(): int
+    {
+        $levels = [
+            'super_admin'  => 100,
+            'tenant_admin' => 50,
+            'operator'     => 30,
+            'technician'   => 30,
+            'support'      => 10,
+            'viewer'       => 10,
+        ];
+
+        $max = 0;
+        foreach ($this->roles as $role) {
+            $max = max($max, $levels[$role->name] ?? 0);
+        }
+        return $max;
+    }
+
+    /** Human-readable primary role label. */
+    public function primaryRoleLabel(): string
+    {
+        $priority = ['super_admin', 'tenant_admin', 'operator', 'technician', 'support', 'viewer'];
+        foreach ($priority as $role) {
+            if ($this->hasRole($role)) {
+                return match ($role) {
+                    'super_admin'  => 'Super Admin',
+                    'tenant_admin' => 'Tenant Admin',
+                    'operator'     => 'Operator',
+                    'technician'   => 'Technician',
+                    'support'      => 'Support',
+                    'viewer'       => 'Viewer',
+                    default        => ucfirst($role),
+                };
+            }
+        }
+        return 'No Role';
+    }
+
+    /** CSS badge classes for role display. */
+    public static function roleBadgeClasses(): array
+    {
+        return [
+            'super_admin'  => 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+            'tenant_admin' => 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+            'operator'     => 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-300',
+            'technician'   => 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300',
+            'support'      => 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+            'viewer'       => 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300',
+        ];
+    }
+
+    /** Audit logs where this user is the subject. */
+    public function permissionAuditLogs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(PermissionAuditLog::class, 'target_id')
+                    ->where('target_type', 'user')
+                    ->orderByDesc('created_at');
     }
 
     // ── Company access control ────────────────────────────────────

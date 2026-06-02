@@ -14,14 +14,19 @@ class Company extends Model
         'code',
         'contact_name',
         'contact_phone',
+        'api_base_url',
+        'api_client_id',
+        'api_client_secret',
+        'api_timeout',
+        'api_enabled',
         'is_active',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean',
+        'is_active'    => 'boolean',
+        'api_enabled'  => 'boolean',
+        'api_timeout'  => 'integer',
     ];
-
-    // ── Hierarchy ─────────────────────────────────────────────────
 
     public function parentCompany(): BelongsTo
     {
@@ -33,17 +38,8 @@ class Company extends Model
         return $this->hasMany(Company::class, 'parent_company_id');
     }
 
-    /**
-     * Recursively collect IDs of this company and all its descendants.
-     * Used for hierarchical access control: a Nexastone admin can see
-     * both Nexastone and Dynatix data.
-     *
-     * NOTE: eager-load `childCompanies` (and nested) before calling this
-     * in a loop to avoid N+1 queries.
-     */
     public function descendantIds(): array
     {
-        // Ensure children are loaded so we don't fire a query per node
         if (! $this->relationLoaded('childCompanies')) {
             $this->load('childCompanies');
         }
@@ -56,8 +52,6 @@ class Company extends Model
 
         return $ids;
     }
-
-    // ── Relations ─────────────────────────────────────────────────
 
     public function users(): HasMany
     {

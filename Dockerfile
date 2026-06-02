@@ -12,16 +12,32 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     git \
+    gnupg \
     default-mysql-client \
     && rm -rf /var/lib/apt/lists/*
 
-RUN docker-php-ext-install intl zip pdo pdo_mysql
+RUN set -eux; \
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc \
+        | gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg; \
+    echo "deb [signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/12/prod bookworm main" \
+        > /etc/apt/sources.list.d/mssql-release.list; \
+    apt-get update; \
+    ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev; \
+    pecl install sqlsrv pdo_sqlsrv; \
+    docker-php-ext-enable sqlsrv pdo_sqlsrv; \
+    docker-php-ext-install intl zip pdo pdo_mysql; \
+    rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+COPY --from=node:22-bookworm-slim /usr/local/bin/node /usr/local/bin/node
+COPY --from=node:22-bookworm-slim /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/npm/bin/npm-cli.js /usr/local/bin/npm \
+    && ln -s /usr/local/lib/node_modules/npm/bin/npx-cli.js /usr/local/bin/npx
 
 COPY . .
 
 RUN composer install --no-dev --optimize-autoloader --no-interaction
+RUN npm ci && npm run build && npm prune --omit=dev
 
 RUN mkdir -p storage/framework/cache \
     storage/framework/sessions \

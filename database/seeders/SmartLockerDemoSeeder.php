@@ -10,18 +10,11 @@ use App\Models\LockerEvent;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class SmartLockerDemoSeeder extends Seeder
 {
     public function run(): void
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Super Admin
-        |--------------------------------------------------------------------------
-        */
-
         $superAdmin = User::updateOrCreate(
             ['email' => 'admin@smartlocker.local'],
             [
@@ -36,44 +29,28 @@ class SmartLockerDemoSeeder extends Seeder
             $superAdmin->syncRoles(['super_admin']);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Company 1: Lannacom
-        |--------------------------------------------------------------------------
-        */
-
         $lannacom = Company::updateOrCreate(
             ['code' => 'LANNACOM'],
             [
-                'parent_company_id' => null,   // Root reseller
+                'parent_company_id' => null,
                 'name' => 'Lannacom Co., Ltd.',
                 'contact_name' => 'Lannacom Contact',
                 'contact_phone' => '+66 53 441480',
+                'api_base_url' => 'https://message-service.lanna.co.th:5183',
+                'api_enabled' => true,
+                'api_timeout' => 10,
                 'is_active' => true,
             ]
         );
 
         $lannacomLocation = Location::updateOrCreate(
-            [
-                'company_id' => $lannacom->id,
-                'name' => 'Lannacom Head Office',
-            ],
-            [
-                'address' => '125 Moo.6 T.Hangdong A.Hangdong Chiang Mai 50230',
-                'latitude' => null,
-                'longitude' => null,
-                'is_active' => true,
-            ]
+            ['company_id' => $lannacom->id, 'name' => 'Lannacom Head Office'],
+            ['address' => '125 Moo.6 T.Hangdong A.Hangdong Chiang Mai 50230', 'latitude' => null, 'longitude' => null, 'is_active' => true]
         );
 
         $lannacomAdmin = User::updateOrCreate(
             ['email' => 'admin@lanna.co.th'],
-            [
-                'company_id' => $lannacom->id,
-                'name' => 'Lannacom Admin',
-                'password' => Hash::make('password1234'),
-                'is_active' => true,
-            ]
+            ['company_id' => $lannacom->id, 'name' => 'Lannacom Admin', 'password' => Hash::make('password1234'), 'is_active' => true]
         );
 
         if (method_exists($lannacomAdmin, 'assignRole')) {
@@ -82,156 +59,77 @@ class SmartLockerDemoSeeder extends Seeder
 
         $lannacomViewer = User::updateOrCreate(
             ['email' => 'viewer@lanna.co.th'],
-            [
-                'company_id' => $lannacom->id,
-                'name' => 'Lannacom Viewer',
-                'password' => Hash::make('password1234'),
-                'is_active' => true,
-            ]
+            ['company_id' => $lannacom->id, 'name' => 'Lannacom Viewer', 'password' => Hash::make('password1234'), 'is_active' => true]
         );
 
         if (method_exists($lannacomViewer, 'assignRole')) {
             $lannacomViewer->syncRoles(['viewer']);
         }
 
-        $this->createLockerSet(
-            company: $lannacom,
-            location: $lannacomLocation,
-            lockerName: 'Lanna Locker 01',
-            serialNumber: 'LANNACOM-NEXA-001',
-            ipAddress: '10.10.70.213',
-            boxCount: 12,
-            status: 'available'
-        );
-
-        $this->createLockerSet(
-            company: $lannacom,
-            location: $lannacomLocation,
-            lockerName: 'Lanna Locker 02',
-            serialNumber: 'LANNACOM-NEXA-002',
-            ipAddress: '10.10.70.214',
-            boxCount: 8,
-            status: 'disabled'
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Company 2: Nexastone
-        |--------------------------------------------------------------------------
-        */
+        $this->createLockerSet($lannacom, $lannacomLocation, 'Lanna Locker 01', 'LANNACOM-NEXA-001', '10.10.70.213', 12, 'available');
+        $this->createLockerSet($lannacom, $lannacomLocation, 'Lanna Locker 02', 'LANNACOM-NEXA-002', '10.10.70.214', 8, 'disabled');
 
         $nexastone = Company::updateOrCreate(
             ['code' => 'NEXASTONE'],
             [
-                'parent_company_id' => $lannacom->id,  // Reseller of Lannacom
+                'parent_company_id' => $lannacom->id,
                 'name' => 'Nexastone Company Limited',
                 'contact_name' => 'Nexastone Contact',
                 'contact_phone' => '021238822',
+                'api_base_url' => 'http://smart-locker.lanna.co.th:5183',
+                'api_enabled' => true,
+                'api_timeout' => 10,
                 'is_active' => true,
             ]
         );
 
         $nexastoneLocation = Location::updateOrCreate(
-            [
-                'company_id' => $nexastone->id,
-                'name' => 'Nexastone Head Office',
-            ],
-            [
-                'address' => '300 Asoke-Dindaeng Rd, Huaykwang, Bangkok 10310 Thailand',
-                'latitude' => null,
-                'longitude' => null,
-                'is_active' => true,
-            ]
+            ['company_id' => $nexastone->id, 'name' => 'Nexastone Head Office'],
+            ['address' => '300 Asoke-Dindaeng Rd, Huaykwang, Bangkok 10310 Thailand', 'latitude' => null, 'longitude' => null, 'is_active' => true]
         );
 
         $nexastoneAdmin = User::updateOrCreate(
             ['email' => 'admin@nexastone.local'],
-            [
-                'company_id' => $nexastone->id,
-                'name' => 'Nexastone Admin',
-                'password' => Hash::make('password1234'),
-                'is_active' => true,
-            ]
+            ['company_id' => $nexastone->id, 'name' => 'Nexastone Admin', 'password' => Hash::make('password1234'), 'is_active' => true]
         );
 
         if (method_exists($nexastoneAdmin, 'assignRole')) {
             $nexastoneAdmin->syncRoles(['tenant_admin']);
         }
 
-        $this->createLockerSet(
-            company: $nexastone,
-            location: $nexastoneLocation,
-            lockerName: 'Nexastone Locker 01',
-            serialNumber: 'NEXASTONE-NEXA-001',
-            ipAddress: '10.20.30.101',
-            boxCount: 16,
-            status: 'in_use'
-        );
-
-        /*
-        |--------------------------------------------------------------------------
-        | Company 3: Dynatix
-        |--------------------------------------------------------------------------
-        */
+        $this->createLockerSet($nexastone, $nexastoneLocation, 'Nexastone Locker 01', 'NEXASTONE-NEXA-001', '10.20.30.101', 16, 'in_use');
 
         $dynatix = Company::updateOrCreate(
             ['code' => 'DYNATIX'],
             [
-                'parent_company_id' => $nexastone->id,  // Reseller of Nexastone
-                'name' => 'บริษัท ไดนาทิกซ์ จำกัด',
+                'parent_company_id' => $nexastone->id,
+                'name' => '?????? ????????? ?????',
                 'contact_name' => 'Dynatix Contact',
                 'contact_phone' => null,
+                'api_enabled' => false,
                 'is_active' => true,
             ]
         );
 
         $dynatixLocation = Location::updateOrCreate(
-            [
-                'company_id' => $dynatix->id,
-                'name' => 'Dynatix Head Office',
-            ],
-            [
-                'address' => '89, อาคาร เอไอเอ แคปปิตอล เซ็นเตอร์ ถนนรัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพมหานคร 10400',
-                'latitude' => null,
-                'longitude' => null,
-                'is_active' => true,
-            ]
+            ['company_id' => $dynatix->id, 'name' => 'Dynatix Head Office'],
+            ['address' => '89, ????? ?????? ???????? ????????? ????????????? ?????????? ????????? ????????????? 10400', 'latitude' => null, 'longitude' => null, 'is_active' => true]
         );
 
         $dynatixAdmin = User::updateOrCreate(
             ['email' => 'admin@dynatix.local'],
-            [
-                'company_id' => $dynatix->id,
-                'name' => 'Dynatix Admin',
-                'password' => Hash::make('password1234'),
-                'is_active' => true,
-            ]
+            ['company_id' => $dynatix->id, 'name' => 'Dynatix Admin', 'password' => Hash::make('password1234'), 'is_active' => true]
         );
 
         if (method_exists($dynatixAdmin, 'assignRole')) {
             $dynatixAdmin->syncRoles(['tenant_admin']);
         }
 
-        $this->createLockerSet(
-            company: $dynatix,
-            location: $dynatixLocation,
-            lockerName: 'Dynatix Locker 01',
-            serialNumber: 'DYNATIX-NEXA-001',
-            ipAddress: '10.30.40.101',
-            boxCount: 10,
-            status: 'fault'
-        );
+        $this->createLockerSet($dynatix, $dynatixLocation, 'Dynatix Locker 01', 'DYNATIX-NEXA-001', '10.30.40.101', 10, 'fault');
     }
 
-    private function createLockerSet(
-        Company $company,
-        Location $location,
-        string $lockerName,
-        string $serialNumber,
-        string $ipAddress,
-        int $boxCount,
-        string $status = 'available'
-    ): void {
+    private function createLockerSet(Company $company, Location $location, string $lockerName, string $serialNumber, string $ipAddress, int $boxCount, string $status = 'available'): void
+    {
         $online = in_array($status, ['available', 'in_use']);
         $locker = Locker::updateOrCreate(
             ['serial_number' => $serialNumber],
@@ -253,16 +151,11 @@ class SmartLockerDemoSeeder extends Seeder
             $status = $this->getBoxStatus($i);
 
             $box = LockerBox::updateOrCreate(
-                [
-                    'locker_id' => $locker->id,
-                    'box_number' => $i,
-                ],
+                ['locker_id' => $locker->id, 'box_number' => $i],
                 [
                     'company_id' => $company->id,
                     'status' => $status,
-                    'last_opened_at' => in_array($status, ['open', 'occupied'])
-                        ? now()->subMinutes(rand(5, 240))
-                        : null,
+                    'last_opened_at' => in_array($status, ['open', 'occupied']) ? now()->subMinutes(rand(5, 240)) : null,
                     'is_active' => $status !== 'disabled',
                 ]
             );
@@ -272,11 +165,7 @@ class SmartLockerDemoSeeder extends Seeder
                 'locker_id' => $locker->id,
                 'locker_box_id' => $box->id,
                 'event_type' => $status === 'error' ? 'error' : 'sync',
-                'payload' => [
-                    'box_number' => $box->box_number,
-                    'status' => $status,
-                    'source' => 'demo_seeder',
-                ],
+                'payload' => ['box_number' => $box->box_number, 'status' => $status, 'source' => 'demo_seeder'],
             ]);
         }
 

@@ -1,10 +1,13 @@
-version: "3.8"
-
 services:
   app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: smart-locker-monitor-app:latest
     container_name: smart-locker-monitor-app
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "8000:80"
     environment:
@@ -42,6 +45,8 @@ services:
     image: smart-locker-monitor-app:latest
     container_name: smart-locker-monitor-reverb
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command: php artisan reverb:start --host=0.0.0.0 --port=8080 --no-interaction
     ports:
       - "8080:8080"

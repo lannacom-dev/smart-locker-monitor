@@ -52,6 +52,30 @@ class RolePermissionSeeder extends Seeder
             // System Health Dashboard
             'view system health',
             'acknowledge alerts',
+
+            // Issue Tracking
+            'view issues',
+            'create issues',
+            'edit issues',
+            'assign issues',
+            'close issues',
+            'delete issues',
+
+            // Corrective Maintenance
+            'view maintenance',
+            'create maintenance',
+            'edit maintenance',
+            'assign maintenance',
+            'complete maintenance',
+            'cancel maintenance',
+            'delete maintenance',
+
+            // Locker Users
+            'view locker users',
+            'create locker users',
+            'edit locker users',
+            'disable locker users',
+            'manage user types',
         ];
 
         foreach ($permissions as $permission) {
@@ -108,10 +132,32 @@ class RolePermissionSeeder extends Seeder
             // Health Dashboard
             'view system health',
             'acknowledge alerts',
+
+            // Issues
+            'view issues',
+            'create issues',
+            'edit issues',
+            'assign issues',
+            'close issues',
+
+            // Maintenance
+            'view maintenance',
+            'create maintenance',
+            'edit maintenance',
+            'assign maintenance',
+            'complete maintenance',
+            'cancel maintenance',
+
+            // Locker Users
+            'view locker users',
+            'create locker users',
+            'edit locker users',
+            'disable locker users',
         ]);
 
         $technician->syncPermissions([
             'view dashboard',
+            'view locker users',
 
             'view lockers',
             'edit lockers',
@@ -126,6 +172,18 @@ class RolePermissionSeeder extends Seeder
 
             // Technician can view health but not acknowledge
             'view system health',
+
+            // Technician can view/create/edit/assign issues
+            'view issues',
+            'create issues',
+            'edit issues',
+            'assign issues',
+
+            // Technician handles maintenance (assigned to them)
+            'view maintenance',
+            'create maintenance',
+            'edit maintenance',
+            'complete maintenance',
         ]);
 
         $viewer->syncPermissions([
@@ -136,6 +194,78 @@ class RolePermissionSeeder extends Seeder
             'view locker events',
 
             'view reports',
+
+            // Viewer can only see issues and maintenance
+            'view issues',
+            'view maintenance',
+        ]);
+
+        // ── New roles ─────────────────────────────────────────────
+
+        $operator = Role::firstOrCreate([
+            'name'       => 'operator',
+            'guard_name' => 'web',
+        ]);
+
+        $support = Role::firstOrCreate([
+            'name'       => 'support',
+            'guard_name' => 'web',
+        ]);
+
+        // Operator: full locker operations + issue/maintenance handling + locker users
+        $operator->syncPermissions([
+            'view dashboard',
+
+            'view lockers',
+            'edit lockers',
+
+            'view locker boxes',
+            'edit locker boxes',
+
+            'view locker events',
+
+            'unlock locker',
+            'restart locker',
+            'update locker status',
+
+            'view system health',
+
+            'view issues',
+            'create issues',
+            'edit issues',
+            'assign issues',
+
+            'view maintenance',
+            'create maintenance',
+            'edit maintenance',
+            'complete maintenance',
+
+            // Locker Users
+            'view locker users',
+            'create locker users',
+            'edit locker users',
+        ]);
+
+        // Support: view + help customers, create and update issues only
+        $support->syncPermissions([
+            'view dashboard',
+
+            'view lockers',
+            'view locker boxes',
+            'view locker events',
+
+            'view system health',
+
+            'view reports',
+
+            'view issues',
+            'create issues',
+            'edit issues',
+
+            'view maintenance',
+
+            // Support can view locker users for customer assistance
+            'view locker users',
         ]);
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();

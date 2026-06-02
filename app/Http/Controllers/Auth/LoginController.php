@@ -11,7 +11,7 @@ class LoginController extends Controller
     public function showLogin()
     {
         if (Auth::check()) {
-            return redirect()->route('dashboard');
+            return redirect()->route('admin.dashboard');
         }
 
         return view('auth.login');
@@ -51,7 +51,7 @@ class LoginController extends Controller
             ]);
         }
 
-        return redirect()->intended(route('dashboard'));
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     public function logout(Request $request)

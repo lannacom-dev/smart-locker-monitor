@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\LockerEditLog;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -35,6 +36,10 @@ class Locker extends Model
         'firmware_version',
         'description',
         'is_active',
+        'code',
+        'zone',
+        'floor',
+        'tenant_id',
     ];
 
     protected $casts = [
@@ -76,6 +81,16 @@ class Locker extends Model
     public function connections(): HasMany
     {
         return $this->hasMany(LockerConnection::class);
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Company::class, 'tenant_id');
+    }
+
+    public function editLogs(): HasMany
+    {
+        return $this->hasMany(LockerEditLog::class)->orderByDesc('created_at');
     }
 
     public function floorPosition(): \Illuminate\Database\Eloquent\Relations\HasOne

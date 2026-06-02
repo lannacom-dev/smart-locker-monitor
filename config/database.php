@@ -112,6 +112,10 @@ return [
             'prefix_indexes' => true,
             'encrypt' => env('DB_ENCRYPT', 'yes'),
             'trust_server_certificate' => env('DB_TRUST_SERVER_CERTIFICATE', 'false'),
+            // Performance: disable MARS overhead (not needed for standard ORM patterns)
+            'MultipleActiveResultSets' => 'false',
+            // Connection timeout: fail fast instead of hanging 30 s
+            'LoginTimeout' => 5,
         ],
 
     ],

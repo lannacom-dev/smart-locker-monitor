@@ -178,17 +178,17 @@ class SystemHealthService
         $url   = rtrim((string) config('services.smartlocker.base_url', ''), '/');
         $start = microtime(true);
 
-        $reachable = false;
-        $error     = null;
-        $responseMs= null;
+        $reachable  = false;
+        $error      = null;
+        $responseMs = null;
 
         if (empty($url)) {
             $error = 'SMARTLOCKER_API_URL not configured';
         } else {
             try {
-                $resp = Http::withOptions(['verify' => false])
+                Http::withOptions(['verify' => false])
                     ->timeout(5)
-                    ->get($url);          // Any response means it's reachable
+                    ->get($url);
 
                 $reachable  = true;
                 $responseMs = (int) round((microtime(true) - $start) * 1000);
@@ -208,10 +208,10 @@ class SystemHealthService
             'status'      => $status,
             'score'       => $reachable ? 100 : 0,
             'details'     => [
-                'reachable'       => $reachable,
-                'endpoint'        => $url,
-                'response_time_ms'=> $responseMs,
-                'error'           => $error,
+                'reachable'        => $reachable,
+                'endpoint'         => $url,
+                'response_time_ms' => $responseMs,
+                'error'            => $error,
             ],
             'checked_at'  => now(),
         ]);

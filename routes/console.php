@@ -35,7 +35,7 @@ Schedule::command('health:check')
 // Sync locker status from the Lannacom SmartLocker API
 // Only runs when SMARTLOCKER_CLIENT_ID is configured
 Schedule::command('smartlocker:sync')
-    ->everyFiveMinutes()
+    ->everyMinute()
     ->withoutOverlapping()
     ->runInBackground()
     ->when(fn() => ! empty(config('services.smartlocker.client_id')))

@@ -24,7 +24,17 @@ try {
     \$user = getenv('DB_USERNAME');
     \$pass = getenv('DB_PASSWORD');
 
-    new PDO(\"mysql:host={\$host};port={\$port};dbname={\$db}\", \$user, \$pass);
+    \$connection = getenv('DB_CONNECTION') ?: 'mysql';
+
+    if (\$connection === 'sqlsrv') {
+        \$encrypt = getenv('DB_ENCRYPT') ?: 'yes';
+        \$trust = getenv('DB_TRUST_SERVER_CERTIFICATE') ?: 'false';
+        \$dsn = \"sqlsrv:Server={\$host},{\$port};Database={\$db};Encrypt={\$encrypt};TrustServerCertificate={\$trust}\";
+    } else {
+        \$dsn = \"mysql:host={\$host};port={\$port};dbname={\$db}\";
+    }
+
+    new PDO(\$dsn, \$user, \$pass);
     exit(0);
 } catch (Throwable \$e) {
     exit(1);
