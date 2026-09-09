@@ -1,0 +1,79 @@
+services:
+  app:
+    image: smart-locker-monitor-app:latest
+    container_name: smart-locker-monitor-app
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8000:80"
+    environment:
+      APP_NAME: "Smart Locker Monitor"
+      APP_ENV: production
+      APP_KEY: "base64:tSu73fWkmbwt2inNrIwuIF6K88DBeAdr8LutJZapPvs="
+      APP_DEBUG: "false"
+      APP_URL: "http://localhost:8000"
+
+      DB_CONNECTION: sqlsrv
+      DB_HOST: "host.docker.internal"
+      DB_PORT: 1433
+      DB_DATABASE: "smart-locker-monitor"
+      DB_USERNAME: sa
+      DB_PASSWORD: "Lannacom@Dev@2020"
+      DB_ENCRYPT: "no"
+      DB_TRUST_SERVER_CERTIFICATE: "true"
+
+      SESSION_DRIVER: database
+      CACHE_STORE: database
+      QUEUE_CONNECTION: database
+
+      LOG_CHANNEL: stack
+      LOG_LEVEL: debug
+
+      AUTO_MIGRATE: "true"
+      AUTO_SEED: "true"
+    volumes:
+      - app_storage:/var/www/html/storage
+      - app_cache:/var/www/html/bootstrap/cache
+    networks:
+      - smartlocker
+
+  reverb:
+    image: smart-locker-monitor-app:latest
+    container_name: smart-locker-monitor-reverb
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    command: php artisan reverb:start --host=0.0.0.0 --port=8080 --no-interaction
+    ports:
+      - "8080:8080"
+    environment:
+      APP_KEY: "base64:tSu73fWkmbwt2inNrIwuIF6K88DBeAdr8LutJZapPvs="
+      DB_CONNECTION: sqlsrv
+      DB_HOST: "host.docker.internal"
+      DB_PORT: 1433
+      DB_DATABASE: "smart-locker-monitor"
+      DB_USERNAME: sa
+      DB_PASSWORD: "Lannacom@Dev@2020"
+      DB_ENCRYPT: "no"
+      DB_TRUST_SERVER_CERTIFICATE: "true"
+      BROADCAST_CONNECTION: reverb
+      REVERB_APP_ID: "smart-locker-monitor"
+      REVERB_APP_KEY: "2asqu9ymmj6ndyhzoau4"
+      REVERB_APP_SECRET: "tzg7sol90mdqv52xrsj0"
+      REVERB_HOST: "0.0.0.0"
+      REVERB_PORT: 8080
+      REVERB_SCHEME: http
+      QUEUE_CONNECTION: database
+    depends_on:
+      - app
+    networks:
+      - smartlocker
+
+volumes:
+  app_storage:
+  app_cache:
+
+networks:
+  smartlocker:
+    driver: bridge

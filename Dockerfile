@@ -23,7 +23,7 @@ RUN set -eux; \
         > /etc/apt/sources.list.d/mssql-release.list; \
     apt-get update; \
     ACCEPT_EULA=Y apt-get install -y msodbcsql18 unixodbc-dev; \
-    pecl install sqlsrv pdo_sqlsrv; \
+    pecl install sqlsrv-5.12.0 pdo_sqlsrv-5.12.0; \
     docker-php-ext-enable sqlsrv pdo_sqlsrv; \
     docker-php-ext-install intl zip pdo pdo_mysql; \
     rm -rf /var/lib/apt/lists/*

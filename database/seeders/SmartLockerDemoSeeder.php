@@ -103,8 +103,8 @@ class SmartLockerDemoSeeder extends Seeder
             ['code' => 'DYNATIX'],
             [
                 'parent_company_id' => $nexastone->id,
-                'name' => '?????? ????????? ?????',
-                'contact_name' => 'Dynatix Contact',
+                'name' => 'บริษัท ไดนาทิกซ์ จำกัด',
+                'contact_name' => 'ผู้ประสานงาน Dynatix',
                 'contact_phone' => null,
                 'api_enabled' => false,
                 'is_active' => true,
@@ -113,7 +113,7 @@ class SmartLockerDemoSeeder extends Seeder
 
         $dynatixLocation = Location::updateOrCreate(
             ['company_id' => $dynatix->id, 'name' => 'Dynatix Head Office'],
-            ['address' => '89, ????? ?????? ???????? ????????? ????????????? ?????????? ????????? ????????????? 10400', 'latitude' => null, 'longitude' => null, 'is_active' => true]
+            ['address' => '89 ถนนรัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพมหานคร 10400', 'latitude' => null, 'longitude' => null, 'is_active' => true]
         );
 
         $dynatixAdmin = User::updateOrCreate(

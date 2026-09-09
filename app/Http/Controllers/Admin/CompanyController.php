@@ -98,7 +98,7 @@ class CompanyController extends Controller
 
         $company->update($validated);
 
-        return redirect()->route('admin.companies.index')->with('success', '??????????');
+        return redirect()->route('admin.companies.index')->with('success', 'บันทึกบริษัทแล้ว');
     }
 
     /**

@@ -8,6 +8,6 @@ class DashboardController extends Controller
 {
     public function index(): RedirectResponse
     {
-        return redirect()->route('admin.dashboard');
+        return redirect('/admin');
     }
 }

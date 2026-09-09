@@ -62,12 +62,22 @@ if [ "$AUTO_MIGRATE" = "true" ]; then
 fi
 
 if [ "$AUTO_SEED" = "true" ]; then
-    if [ ! -f storage/app/seeded.lock ]; then
-        echo "Running seeders first time..."
+    if [ "$FORCE_SEED" = "true" ] || [ ! -f storage/app/seeded.lock ] || ! php -r '
+        try {
+            require "vendor/autoload.php";
+            $app = require "bootstrap/app.php";
+            $kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+            $kernel->bootstrap();
+            exit(App\Models\User::query()->exists() ? 0 : 1);
+        } catch (Throwable $e) {
+            exit(1);
+        }
+    '; then
+        echo "Running seeders..."
         php artisan db:seed --force
         touch storage/app/seeded.lock
     else
-        echo "Seed already completed. Skipping..."
+        echo "Seed already completed and users exist. Skipping..."
     fi
 fi
 
@@ -75,7 +85,7 @@ echo "Caching Laravel config..."
 
 php artisan config:cache || true
 php artisan route:cache || true
-php artisan view:cache || true
+php artisan view:clear || true
 
 echo "Starting services..."
 
